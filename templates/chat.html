@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice Chatbot</title>
+    <script src="https://unpkg.com/htmx.org"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 20px auto;
+      }
+      .chat-container {
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .message {
+        padding: 8px;
+        margin: 5px 0;
+        border-radius: 4px;
+      }
+      .user {
+        background-color: #d4edda;
+        text-align: right;
+      }
+      .bot {
+        background-color: #f8d7da;
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Invoice Chatbot</h2>
+    <div class="chat-container" id="chatbox">
+      <div class="message bot">
+        Hello! Let's create an invoice. What's the client’s name?
+      </div>
+    </div>
+
+    <form
+      hx-post="/chat"
+      hx-trigger="submit"
+      hx-target="#chatbox"
+      hx-swap="beforeend"
+    >
+      <input
+        type="text"
+        name="message"
+        placeholder="Type your message..."
+        required
+      />
+      <button type="submit">Send</button>
+    </form>
+  </body>
+</html>
