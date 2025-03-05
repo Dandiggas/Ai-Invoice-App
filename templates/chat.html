@@ -3,40 +3,136 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Invoice Chatbot</title>
+    <title>AI Invoice Assistant</title>
     <script src="https://unpkg.com/htmx.org"></script>
     <style>
       body {
-        font-family: Arial, sans-serif;
-        max-width: 600px;
-        margin: 20px auto;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 20px;
       }
       .chat-container {
-        border: 1px solid #ccc;
-        padding: 10px;
-        border-radius: 5px;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        height: 60vh;
+        overflow-y: auto;
+        margin-bottom: 20px;
       }
       .message {
-        padding: 8px;
-        margin: 5px 0;
-        border-radius: 4px;
+        padding: 10px 15px;
+        margin: 8px 0;
+        border-radius: 18px;
+        max-width: 80%;
+        word-wrap: break-word;
       }
       .user {
-        background-color: #d4edda;
-        text-align: right;
+        background-color: #dcf8c6;
+        margin-left: auto;
+        margin-right: 10px;
+        border-bottom-right-radius: 5px;
       }
       .bot {
-        background-color: #f8d7da;
-        text-align: left;
+        background-color: #f1f0f0;
+        margin-right: auto;
+        margin-left: 10px;
+        border-bottom-left-radius: 5px;
+      }
+      .input-area {
+        display: flex;
+        margin-top: 10px;
+      }
+      #messageInput {
+        flex: 1;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px 0 0 4px;
+        outline: none;
+      }
+      button {
+        padding: 12px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 0 4px 4px 0;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .instructions {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #e9f7fe;
+        border-left: 5px solid #2196f3;
+        border-radius: 4px;
+      }
+      .typing-indicator {
+        display: none;
+        margin: 8px 0;
+        margin-left: 10px;
+      }
+      .typing-indicator span {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #ccc;
+        border-radius: 50%;
+        margin-right: 5px;
+        animation: bounce 1.5s infinite ease-in-out;
+      }
+      .typing-indicator span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .typing-indicator span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-5px);
+        }
       }
     </style>
   </head>
   <body>
-    <h2>Invoice Chatbot</h2>
+    <div class="header">
+      <h1>AI Invoice Assistant</h1>
+    </div>
+
     <div class="chat-container" id="chatbox">
       <div class="message bot">
-        Hello! Let's create an invoice. What's the client’s name?
+        Hello! I'm your invoice assistant. I can help you create and send
+        invoices to your clients. Please provide the following details:
+        <br /><br />
+        - Client name
+        <br />
+        - Client email
+        <br />
+        - Service description
+        <br />
+        - Amount
+        <br /><br />
+        For example: "Create an invoice for client John Doe, email
+        john@example.com, for web development services, amount £500"
       </div>
+    </div>
+
+    <div class="typing-indicator" id="typingIndicator">
+      <span></span>
+      <span></span>
+      <span></span>
     </div>
 
     <form
@@ -44,14 +140,65 @@
       hx-trigger="submit"
       hx-target="#chatbox"
       hx-swap="beforeend"
+      hx-indicator="#typingIndicator"
+      id="chatForm"
     >
-      <input
-        type="text"
-        name="message"
-        placeholder="Type your message..."
-        required
-      />
-      <button type="submit">Send</button>
+      <div class="input-area">
+        <input
+          type="text"
+          name="message"
+          id="messageInput"
+          placeholder="Type your message..."
+          required
+        />
+        <button type="submit">Send</button>
+      </div>
     </form>
+
+    <div class="instructions">
+      <h3>Quick Tips:</h3>
+      <ul>
+        <li>
+          You can type all details at once or respond to prompts one by one
+        </li>
+        <li>Type "reset" to start over</li>
+        <li>
+          For quick testing, try: "Invoice for Jane Smith, email
+          jane@example.com, for graphic design, £350"
+        </li>
+      </ul>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const chatbox = document.getElementById("chatbox");
+        const form = document.getElementById("chatForm");
+        const input = document.getElementById("messageInput");
+
+        // Scroll to bottom on new messages
+        function scrollToBottom() {
+          chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        // Scroll to bottom initially and when content changes
+        scrollToBottom();
+        chatbox.addEventListener("DOMNodeInserted", scrollToBottom);
+
+        // Clear input after form submission
+        form.addEventListener("htmx:afterRequest", function () {
+          input.value = "";
+          input.focus();
+        });
+
+        // Show typing indicator during requests
+        form.addEventListener("htmx:beforeRequest", function () {
+          document.getElementById("typingIndicator").style.display = "block";
+        });
+
+        form.addEventListener("htmx:afterRequest", function () {
+          document.getElementById("typingIndicator").style.display = "none";
+        });
+      });
+    </script>
   </body>
 </html>
